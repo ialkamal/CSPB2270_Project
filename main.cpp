@@ -4,6 +4,8 @@
 #include <vector>
 #include <time.h>
 #include <cmath>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 typedef map<string,vector<float>> neuron;
@@ -159,6 +161,67 @@ void backward_propogate_error(vector<layer>& network, vector<float> expected){
     }
 }
 
+void read_record()
+{
+    fstream fin; 
+    fin.open("C:\\Users\\nawatt\\Documents\\Code\\CSPB2270_Project\\wheat-seeds.csv", ios::in);
+    int rollnum, roll2, count = 0; 
+    vector<float> row; 
+    string line, word, temp;
+
+    
+
+    while (fin >> temp) { 
+
+        cout << "\nTEMP: " << temp << endl;
+  
+        row.clear(); 
+  
+        // read an entire row and 
+        // store it in a string variable 'line' 
+        getline(fin, line); 
+
+        cout << "\nLINE: " << line << endl;
+  
+        // used for breaking words 
+        stringstream s(temp); 
+  
+        // read every column data of a row and 
+        // store it in a string variable, 'word' 
+        while (getline(s, word, ',')) { 
+  
+            // add all the column data 
+            // of a row to a vector 
+            row.push_back(stof(word)); 
+        } 
+
+
+         for(auto a: row) cout << a << " ";
+         cout << endl; 
+  
+        // convert string to integer for comparision 
+        roll2 = int(row[0]); 
+  
+        // Compare the roll number 
+        if (roll2 == rollnum) { 
+  
+            // Print the found data 
+            count = 1; 
+            cout << "Details of Roll " << row[0] << " : \n"; 
+            cout << "Name: " << row[1] << "\n"; 
+            cout << "Maths: " << row[2] << "\n"; 
+            cout << "Physics: " << row[3] << "\n"; 
+            cout << "Chemistry: " << row[4] << "\n"; 
+            cout << "Biology: " << row[5] << "\n"; 
+            break; 
+        } 
+    } 
+    if (count == 0) 
+        cout << "Record not found\n";   
+
+
+}
+
 
 
 int main()
@@ -182,5 +245,8 @@ int main()
 
 
     cout<<"Hello World!";
+
+    read_record();
+
     return 0;
 }
