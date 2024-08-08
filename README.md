@@ -16,6 +16,14 @@ Since we are using supervised learning (in other words, we know the correct clas
 
 Finally, I use cross validation to train my neural network. I partition the data to 5 parts and use one as a test set and the rest for training and then alternate to make sure that I'm not overfitting (i.e. tweaking my weights to the exact dataset). For each different parition, I calculate the accuracy of my algorithm and then take the mean value.
 
+Here's a video walkthrough of the code:
+
+<p style="text-align: center;">
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=GzHbTmwYQvw
+" target="_blank"><img src="http://img.youtube.com/vi/GzHbTmwYQvw/0.jpg" 
+alt="Video walkthrough" width="240" height="180" border="10" /></a>
+</p>
+
 ## Dataset
 
 I used the wheat seeds dataset from [here](https://archive.ics.uci.edu/dataset/236/seeds) which based on 7 measurements of wheat seeds, these are being classified into 3 categories.
