@@ -18,7 +18,7 @@ Finally, I use cross validation to train my neural network. I partition the data
 
 Here's a video walkthrough of the code:
 
-<p style="text-align: center;">
+<p align="center">
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=GzHbTmwYQvw
 " target="_blank"><img src="http://img.youtube.com/vi/GzHbTmwYQvw/0.jpg" 
 alt="Video walkthrough" width="240" height="180" border="10" /></a>
