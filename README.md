@@ -21,7 +21,7 @@ Here's a video walkthrough of the code:
 <p align="center">
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=GzHbTmwYQvw
 " target="_blank"><img src="https://i9.ytimg.com/vi_webp/GzHbTmwYQvw/mq3.webp?sqp=CKCl1bUG-oaymwEmCMACELQB8quKqQMa8AEB-AH-CYACuAWKAgwIABABGEAgTih_MA8=&rs=AOn4CLC4UuJ7rxcNd4dYabXdPL5IP1ZFIw" 
-alt="Video walkthrough" width="240" height="180" border="10" /></a>
+alt="Video walkthrough"/></a>
 </p>
 
 ## Dataset
