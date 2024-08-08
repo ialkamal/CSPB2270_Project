@@ -2,7 +2,7 @@
 
 This project is an attempt to understand how neural networks work by coding a basic implementation using the C++ standard library (STL). I figured that I will attempt to port an existing python implementation instead of starting from theory. Jason Brownlee has a very good implementation in python which you can check [here](https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/).
 
-![image][https://github.com/ialkamal/CSPB2270_Project/tree/master/images/neural_network.png]
+![image](https://github.com/ialkamal/CSPB2270_Project/tree/master/images/neural_network.png)
 
 ## Details
 
@@ -33,4 +33,4 @@ g++ main.cpp -o main && ./main
 
 After training and cross validation using the wheat samples dataset, I was able to achieve close to 94% accuracy.
 
-![image][https://github.com/ialkamal/CSPB2270_Project/tree/master/images/results.png]
+![image](https://github.com/ialkamal/CSPB2270_Project/tree/master/images/results.png)
