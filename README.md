@@ -3,6 +3,10 @@
 This project is an attempt to understand how neural networks work by coding a basic implementation using the C++ standard library (STL). I figured that I will attempt to port an existing python implementation instead of starting from theory. Jason Brownlee has a very good implementation in python which you can check [here](https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/).
 
 ![image](images/neural_network.png)
+<p align="center">
+<img src="https://github.com/ialkamal/CSPB2270_Project/raw/master/images/neural_network.png" 
+alt="Neural Network"/></a>
+</p>
 
 ## Details
 
