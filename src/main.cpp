@@ -9,19 +9,21 @@
 #include <set>
 #include <algorithm>
 #include <iterator>
+#include <iomanip>   
+
 
 using namespace std;
-typedef map<string,vector<float>> neuron;
+typedef map<string,vector<double>> neuron;
 typedef vector<neuron> layer;
 
 
-vector<float> generate_weights(int input)
+vector<double> generate_weights(int input)
 {
-    vector<float> list;
+    vector<double> list;
     
     for(int i=0; i<input+1;i++)
     {
-        float random_number = rand() / float(RAND_MAX);
+        double random_number = rand() / double(RAND_MAX);
         list.push_back(random_number);
     }
     return list;  
@@ -81,9 +83,9 @@ std::ostream& operator<<(std::ostream& out, const vector<layer>& e) {
     return out;
 }
 
-float activate(vector<float> weights, vector<float> inputs)
+double activate(vector<double> weights, vector<double> inputs)
 {
-    float activation = weights.back();
+    double activation = weights.back();
     for(int i=0; i<weights.size()-1; i++)
     {
         activation += weights[i] * inputs[i];
@@ -91,207 +93,146 @@ float activate(vector<float> weights, vector<float> inputs)
     return activation;
 }
 
-float transfer(float activation)
+double transfer(double activation)
 {
-    return 1.0 / (1.0 + exp(-1*activation));
+    return 1.0 / (1.0 + exp(-activation));
 }
 
-vector<float> forward_propogate(vector<layer>& network, vector<float> row)
+vector<double> forward_propogate(vector<layer>& network, vector<double> row)
 {
-    vector<float> inputs = row;
-    float activation = -1;
+    vector<double> inputs = row;
+    double activation = -1;
     
     for(int i=0; i<network.size();i++)
     {
-        vector<float> new_inputs = {};
+        vector<double> new_inputs = {};
         for(int j=0; j<network[i].size(); j++)
         {
             activation = activate(network[i][j]["weights"],inputs);
-            network[i][j]["output"] = vector<float>(1, transfer(activation));
+            //cout << "ACtivation: " << activation << endl;
+            network[i][j]["output"] = vector<double>(1, transfer(activation));
             new_inputs.push_back(network[i][j]["output"][0]);   
         }
-        inputs = {new_inputs.begin(),new_inputs.end()};
+        inputs = new_inputs;
     }
 
     return inputs;
 }
 
-float transfer_derivative(float output)
+double transfer_derivative(double output)
 {
     return output * (1.0 - output);
 }
 
-void backward_propogate_error(vector<layer>& network, vector<float> expected){
+void backward_propogate_error(vector<layer>& network, vector<double> expected){
 
-    neuron n;
     // Initialize delta for each neuron in each layer
     for (int i = 0; i < network.size(); i++) {
         for (int j = 0; j < network[i].size(); j++) {
-            network[i][j]["delta"] = vector<float>(1, 0.0); 
+            network[i][j]["delta"] = vector<double>(1, 0.0); 
         }
     }
-
-    // cout << "BB BEFORE" << endl;
-    // cout << network << endl;
 
     // Backpropagation loop
     for(int i=network.size()-1; i>=0; i--)
     {
-        layer l = network[i];
-        vector<float> errors = {};
+        //vector<double> errors = {};
 
-        if(i != network.size()-1)
+        for(int j=0; j<network[i].size(); j++)
         {
-
-            // cout << endl << "NEXT!!!!" << endl;
-
-            for(int j=0; j<l.size(); j++)
-            {
-                float error = 0.0;
+            double error = 0.0;
+            if(i == network.size()-1)
+             {
+                error = expected[j] - network[i][j]["output"][0];
+             }
+            else
+             {
                 for(auto neuron:network[i+1])
-                {
                     error += neuron["weights"][j] * neuron["delta"][0];
-                    // cout << endl << "ERRORR FOUND!!!!" << endl;
-                }
-                errors.push_back(error);
-            }
-        }
-        else
-        {
-            // cout << endl << "REACHED!!!!" << endl;
+             }
+            
+            network[i][j]["delta"][0] = error * transfer_derivative(network[i][j]["output"][0]);
 
-            for(int j=0; j<l.size(); j++)
-            {
-                n = l[j];
-                errors.push_back(n["output"][0] - expected[j]);
-            }
-        }
-
-        for(int j=0; j<l.size(); j++)
-        {
-            network[i][j]["delta"][0] = errors[j] * transfer_derivative(n["output"][0]);
-        }
+        }      
     }
+    
 }
 
-void update_weights(vector<layer>& network, vector<float> row, float l_rate)
+void update_weights(vector<layer>& network, vector<double> row, double l_rate)
 {
-    vector<float> inputs;
+    
     
     for(int i = 0; i<network.size(); i++)
     {
+        vector<double> inputs = {};
 
         if(i != 0)
         {
-            inputs.clear();
             for(auto neuron:network[i-1])
                 inputs.push_back(neuron["output"][0]);
         }
         else
-        {
             inputs = {row.begin(),row.end()-1};
-            
-        }
-
-
-        // cout << "VECTOR: " << endl;
-        // for(auto inp:inputs) cout << inp << " ";
-        // cout << endl;
-
-        // cout << endl << "SIZE: " << inputs.size() << endl;
-        cout << endl << "ROW: " << endl;
-        for(auto a:inputs) cout << a << " ";
-        cout << endl;
 
         for(int j = 0; j<network[i].size(); j++)
         {
             for(int k=0; k < inputs.size(); k++)
-                network[i][j]["weights"][k] -= l_rate * network[i][j]["delta"][0] * inputs[k];
+                network[i][j]["weights"][k] += l_rate * network[i][j]["delta"][0] * inputs[k];
                 
         
-            network[i][j]["weights"][network[i][j]["weights"].size()-1] -= l_rate * network[i][j]["delta"][0];
+            network[i][j]["weights"][network[i][j]["weights"].size()-1] += l_rate * network[i][j]["delta"][0];
         }
 
     }
 }
 
-void train_network(vector<layer>& network, vector<vector<float>> train, float l_rate, int n_epoch, int n_outputs)
+void train_network(vector<layer>& network, vector<vector<double>> train, double l_rate, int n_epoch, int n_outputs)
 {
     
 
     for(int epoch=0; epoch<n_epoch; epoch++)
     {
-        float sum_error = 0;
+        double sum_error = 0.0;
 
         for(auto row:train)
         {
-            vector<float> outputs = forward_propogate(network, row);
-
-            // cout << "Outputs: " << endl;
-            // for(auto output:outputs) cout << output << " ";
-            // cout << endl;
+            vector<double> outputs = forward_propogate(network, row);
             
-            vector<float> expected = vector<float>(n_outputs, 0);
+            vector<double> expected = vector<double>(n_outputs, 0);
+            expected[row.back()] = 1;
 
-            // cout << "Expected: " << endl;
-            // for(auto e:expected) cout << e << " ";
-            // cout << endl;
-
-            expected[row[row.size()-1]] = 1;
-
-            // cout << "Expected (After): " << endl;
-            // for(auto e:expected) cout << e << " ";
-            // cout << endl;
-
-            for(int i=0; i<expected.size(); i++)
+            for(int i=0; i<n_outputs; i++)
                 sum_error += pow(expected[i] - outputs[i], 2);
-
-            // cout << "Sum Error: " << sum_error << endl;
 
             backward_propogate_error(network, expected); 
 
-            // cout << "Back Propagation: " << endl;
-            // cout << network;
 
             update_weights(network, row, l_rate);
-
-            // cout << "Update Weights: " << endl;
-            // cout << network;           
 
         }
         cout << "epoch= " << epoch << " lrate= " << l_rate << " error= " << sum_error << endl;
     }
 }
 
-int predict(vector<layer>& network, vector<float> row)
+int predict(vector<layer>& network, vector<double> row)
 {
-    vector<float> outputs = forward_propogate(network, row);
-    cout << " " << *max_element(outputs.begin(),outputs.end()) << endl;
+    vector<double> outputs = forward_propogate(network, row);
     return max_element(outputs.begin(),outputs.end()) - outputs.begin();
 }
 
-vector<vector<float>> read_record()
+vector<vector<double>> read_record()
 {
     fstream fin; 
     fin.open("../wheat-seeds.csv", ios::in);
-    int rollnum, roll2, count = 0; 
-    vector<vector<float>> record;
-    vector<float> row; 
-    string line, word, temp;
-
+    vector<vector<double>> record;
+    vector<double> row; 
+    string word, temp;
     
 
     while (fin >> temp) { 
 
+        double min, max;
         row.clear(); 
-  
-        // read an entire row and 
-        // store it in a string variable 'line' 
-        // getline(fin, line); 
-
-        // cout << "\nLINE: " << line << endl;
-  
-        // used for breaking words 
         stringstream s(temp); 
   
         // read every column data of a row and 
@@ -299,52 +240,78 @@ vector<vector<float>> read_record()
         while (getline(s, word, ',')) { 
   
             // add all the column data 
-            // of a row to a vector 
+            // of a row to a vector
             row.push_back(stof(word)); 
         }
 
+        //Normalize Data
+        min = *min_element(row.begin(), row.end()-1);
+        max = *max_element(row.begin(), row.end()-1);
+        for(int i=0; i < row.size()-1; i++)
+            row[i] = (row[i]- min) / (max - min);
 
         record.push_back(row);
     } 
     
-
-    // for(auto line:record)
-    // {
-    //     for(auto val:line)
-    //     {
-    //         cout << val << ",";
-    //     }
-    //     cout << endl;
-    // }
-    
     if (record.size() == 0) 
         cout << "Record not found\n";   
+
+        
 
     return record;
 
 }
 
-
-
-int main()
+double accuracy_metric(vector<int> actual, vector<int> predicted)
 {
-    srand(time(NULL));
+    double correct = 0;
+    for(int i=0; i<actual.size(); i++)
+        if(actual[i] == predicted[i]) correct++;
 
-    cout << endl;
-    cout<<"Begin Neural Network Program!" << endl;
+    return (correct / double(actual.size())) * 100.0;
+}
 
-    // vector<vector<float>> dataset = { {2.7810836 ,2.550537003, 0 },
-    //                                   {1.465489372, 2.362125076, 0},
-    //                                   {3.396561688, 4.400293529, 0},
-    //                                   {1.38807019, 1.850220317, 0},
-    //                                   {3.06407232, 3.005305973, 0},
-    //                                   {7.627531214, 2.759262235, 1},
-    //                                   {5.332441248, 2.088626775, 1},
-    //                                   {6.922596716, 1.77106367, 1},
-    //                                   {8.675418651, -0.242068655, 1},
-    //                                   {7.673756466, 3.508563011, 1} };
+vector<vector<vector<double>>> cross_validation_split(vector<vector<double>> dataset, int n_folds)
+{
+    vector<vector<vector<double>>> dataset_split = {};
+    int fold_size = int(dataset.size() / n_folds);
 
-    vector<vector<float>> dataset = read_record();
+    vector<vector<double>> dataset_copy = {dataset.begin(), dataset.end()};
+
+    for(int i=0; i<n_folds; i++)
+    {
+        vector<vector<double>> fold = {};
+        while(fold.size() < fold_size)
+        {
+            int index = rand() % dataset_copy.size();
+            fold.push_back(dataset_copy.at(index));
+            dataset_copy.erase(dataset_copy.begin() + index);
+        }
+        dataset_split.push_back(fold);
+    }
+    return dataset_split;
+}
+
+vector<double> evaluate_algorithm(vector<vector<double>> dataset, int n_folds)
+{
+   vector<vector<vector<double>>> folds =  cross_validation_split(dataset, n_folds);
+   vector<double> scores = {};
+
+
+   for(int i=0; i<n_folds; i++)
+   {
+
+    cout << endl << "Cross Validation: Fold No. " << i << endl; 
+
+    vector<vector<double>> train = {};
+    train.reserve(folds[0].size()*(n_folds-1));
+    vector<vector<double>> test = {};
+    for(int j=0; j<n_folds; j++)
+    {
+        if(i==j)
+            test = {folds[j].begin(), folds[j].end()};
+        train.insert(train.end(),folds[j].begin(),folds[j].end());
+    } 
 
     int n_inputs = dataset[0].size() - 1;
     
@@ -355,44 +322,42 @@ int main()
     }
     int n_outputs = classes.size();
 
-    vector<layer> network = initialize_network(n_inputs,3,n_outputs);
+    vector<layer> network = initialize_network(n_inputs,5,n_outputs);
 
-    cout << "Inputs= " << n_inputs << " Outputs= " << n_outputs << endl;
+    train_network(network, train, .3, 500, n_outputs);
 
-    cout << endl << "Network Structure (Before): " << endl;
-    cout << network;
-
-    train_network(network, dataset, 0.3, 20, n_outputs);
-    
-    cout << endl << "Network Structure (After): " << endl;
-    cout << network << endl;
-
-    for(auto row:dataset)
+    vector<int> predictions = {};
+    vector<int> actual = {};
+    for(auto row:test)
     {
+        actual.push_back(row.back());
         int prediction = predict(network, row);
-        cout << "Expected = " << row[row.size()-1] << " , Predicted = " << prediction << endl;
+        predictions.push_back(prediction);
     } 
-    
-    
-    // network[0][0]["output"] = {0.7105668883115941};
-    // network[1][0]["output"] = {0.6213859615555266};
-    // network[1][1]["output"] = {0.6573693455986976};
-    
-    // cout << network;
 
-    // vector<float> row = {1, 0};
-
-    // vector<float> output = forward_propogate(network, row);
-
-    // vector<float> expected = {0,1};
-
-    // cout << endl << "Back Propagation:" << endl;
-    // backward_propogate_error(network, expected);
-    // cout << network;
+    scores.push_back(accuracy_metric(actual,predictions));
+   }
+   
+    return scores;
+}
 
 
-    // cout<<"Hello World!";
+int main()
+{
+    srand(time(NULL));
 
-    
+    cout << endl;
+    cout<<"Begin Neural Network Program!" << endl;
+
+    vector<vector<double>> dataset = read_record();
+    vector<double> scores = evaluate_algorithm(dataset, 5);
+
+    double mean_score = 0;
+    for(auto score:scores) mean_score += score / scores.size();
+    cout << endl << "======RESULTS======" << endl;
+    cout << "Mean Accuracy of Neural Network Algorithm: " << setprecision(4) << mean_score << "%" << endl;
+    cout << "===================";
+    cout<<endl;
+
     return 0;
 }
